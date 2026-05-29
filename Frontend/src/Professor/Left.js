@@ -62,7 +62,7 @@ export default function Left({
             onClick={toggleSidebar}
             className="bg-slate-800 hover:bg-slate-700 p-2 rounded-xl"
           >
-            ✕
+            {isExpanded ? "✕" : "☰"}
           </button>
         </div>
 
