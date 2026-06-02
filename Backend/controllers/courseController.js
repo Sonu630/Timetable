@@ -1,142 +1,175 @@
 const db = require("../config/db");
 
-exports.createCourse = (
+/*
+========================================
+CREATE COURSE
+========================================
+*/
+
+exports.createCourse = async (
   req,
   res
 ) => {
-  const {
-    course_name,
-    course_code,
-    credits,
-    professor_id,
-    department,
-  } = req.body;
-
-  const sql = `
-    INSERT INTO courses
-    (
-      course_name,
-      course_code,
-      credits,
-      professor_id,
-      department
-    )
-    VALUES (?, ?, ?, ?, ?)
-  `;
-
-  db.query(
-    sql,
-    [
+  try {
+    const {
       course_name,
       course_code,
       credits,
       professor_id,
       department,
-    ],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json(err);
-      }
+    } = req.body;
 
-      res.json({
-        success: true,
-        message:
-          "Course created successfully",
-      });
-    }
-  );
+    const sql = `
+      INSERT INTO courses
+      (
+        course_name,
+        course_code,
+        credits,
+        professor_id,
+        department
+      )
+      VALUES ($1, $2, $3, $4, $5)
+    `;
+
+    await db.query(sql, [
+      course_name,
+      course_code,
+      credits,
+      professor_id,
+      department,
+    ]);
+
+    res.json({
+      success: true,
+      message:
+        "Course created successfully",
+    });
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json(err);
+  }
 };
 
-exports.getCourses = (
+/*
+========================================
+GET COURSES
+========================================
+*/
+
+exports.getCourses = async (
   req,
   res
 ) => {
-  const sql = `
-    SELECT
-      courses.*,
-      users.username AS professor_name
-    FROM courses
+  try {
+    const sql = `
+      SELECT
+        courses.*,
+        users.username AS professor_name
+      FROM courses
 
-    LEFT JOIN users
-    ON courses.professor_id = users.id
-  `;
+      LEFT JOIN users
+      ON courses.professor_id = users.id
+    `;
 
-  db.query(sql, (err, result) => {
-    if (err) {
-      return res.status(500).json(err);
-    }
+    const result =
+      await db.query(sql);
 
-    res.json(result);
-  });
+    res.json(
+      result.rows
+    );
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json(err);
+  }
 };
 
-exports.updateCourse = (
+/*
+========================================
+UPDATE COURSE
+========================================
+*/
+
+exports.updateCourse = async (
   req,
   res
 ) => {
-  const { id } = req.params;
+  try {
+    const { id } =
+      req.params;
 
-  const {
-    course_name,
-    course_code,
-    credits,
-    professor_id,
-    department,
-  } = req.body;
+    const {
+      course_name,
+      course_code,
+      credits,
+      professor_id,
+      department,
+    } = req.body;
 
-  const sql = `
-    UPDATE courses
-    SET
-      course_name = ?,
-      course_code = ?,
-      credits = ?,
-      professor_id = ?,
-      department = ?
-    WHERE id = ?
-  `;
+    const sql = `
+      UPDATE courses
+      SET
+        course_name = $1,
+        course_code = $2,
+        credits = $3,
+        professor_id = $4,
+        department = $5
+      WHERE id = $6
+    `;
 
-  db.query(
-    sql,
-    [
+    await db.query(sql, [
       course_name,
       course_code,
       credits,
       professor_id,
       department,
       id,
-    ],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json(err);
-      }
+    ]);
 
-      res.json({
-        success: true,
-        message:
-          "Course updated successfully",
-      });
-    }
-  );
+    res.json({
+      success: true,
+      message:
+        "Course updated successfully",
+    });
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json(err);
+  }
 };
 
-exports.deleteCourse = (
+/*
+========================================
+DELETE COURSE
+========================================
+*/
+
+exports.deleteCourse = async (
   req,
   res
 ) => {
-  const { id } = req.params;
+  try {
+    const { id } =
+      req.params;
 
-  const sql =
-    "DELETE FROM courses WHERE id = ?";
+    const sql = `
+      DELETE FROM courses
+      WHERE id = $1
+    `;
 
-  db.query(sql, [id], (err, result) => {
-    if (err) {
-      return res.status(500).json(err);
-    }
+    await db.query(sql, [
+      id,
+    ]);
 
     res.json({
       success: true,
       message:
         "Course deleted successfully",
     });
-  });
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json(err);
+  }
 };

@@ -1,21 +1,13 @@
 const express = require("express");
-
 const cors = require("cors");
-
 const dotenv = require("dotenv");
-
 const http = require("http");
-
-const { Server } = require(
-  "socket.io"
-);
+const { Server } = require("socket.io");
 
 dotenv.config();
 
 const app = express();
-
-const server =
-  http.createServer(app);
+const server = http.createServer(app);
 
 /*
 ========================================
@@ -25,9 +17,7 @@ SOCKET IO
 
 const io = new Server(server, {
   cors: {
-    origin:
-      "http://localhost:3000",
-
+    origin: "http://localhost:3000",
     methods: ["GET", "POST"],
   },
 });
@@ -77,6 +67,7 @@ const {
   createPollsTable,
   createPollVotesTable,
   createNotificationsTable,
+  createAnnouncementsTable,
 } = require("./config/createTables");
 
 /*
@@ -131,6 +122,14 @@ const adminRoutes = require(
   "./routes/adminRoutes"
 );
 
+const profileRoutes = require(
+  "./routes/profileRoutes"
+);
+
+const announcementRoute = require(
+  "./routes/announcementRoute"
+);
+
 /*
 ========================================
 APP MIDDLEWARE
@@ -142,27 +141,48 @@ app.use(cors());
 app.use(express.json());
 
 /*
+/*
 ========================================
 CREATE TABLES
 ========================================
 */
 
-createUsersTable();
+const initTables = async () => {
+  try {
+    await createUsersTable();
 
-createCoursesTable();
+    await createCoursesTable();
 
-createEnrollmentsTable();
+    await createEnrollmentsTable();
 
-createTimetableTable();
+    await createTimetableTable();
 
-createProfessorRequestsTable();
+    await createProfessorRequestsTable();
 
-createPollsTable();
+    await createPollsTable();
 
-createPollVotesTable();
+    await createPollVotesTable();
 
-createNotificationsTable();
+    await createNotificationsTable();
 
+    await createAnnouncementsTable();
+
+    console.log(`
+========================================
+All Tables Created Successfully
+========================================
+`);
+  } catch (err) {
+    console.error(
+      "Table Creation Error:",
+      err
+    );
+
+    process.exit(1);
+  }
+};
+
+initTables();
 /*
 ========================================
 API ROUTES
@@ -184,6 +204,10 @@ app.use("/", requestRoutes);
 app.use("/", notificationRoutes);
 
 app.use("/", adminRoutes);
+
+app.use("/", profileRoutes);
+
+app.use("/", announcementRoute);
 
 /*
 ========================================
@@ -210,10 +234,8 @@ app.get(
   (req, res) => {
     res.json({
       success: true,
-
       message:
         "Welcome Student",
-
       user: req.user,
     });
   }
@@ -226,10 +248,8 @@ app.get(
   (req, res) => {
     res.json({
       success: true,
-
       message:
         "Welcome Professor",
-
       user: req.user,
     });
   }
@@ -242,10 +262,8 @@ app.get(
   (req, res) => {
     res.json({
       success: true,
-
       message:
         "Welcome Admin",
-
       user: req.user,
     });
   }
@@ -270,8 +288,15 @@ GLOBAL ERROR HANDLER
 */
 
 app.use(
-  (err, req, res, next) => {
-    console.error(err.stack);
+  (
+    err,
+    req,
+    res,
+    next
+  ) => {
+    console.error(
+      err.stack
+    );
 
     res.status(500).json({
       error: "Server Error",

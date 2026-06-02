@@ -1,36 +1,17 @@
 const db = require("../config/db");
 
-exports.createRequest = (
+/*
+========================================
+CREATE REQUEST
+========================================
+*/
+
+exports.createRequest = async (
   req,
   res
 ) => {
-  const {
-    professor_id,
-    course_id,
-    requested_day,
-    requested_room,
-    requested_start_time,
-    requested_end_time,
-    reason,
-  } = req.body;
-
-  const sql = `
-    INSERT INTO professor_requests
-    (
-      professor_id,
-      course_id,
-      requested_day,
-      requested_room,
-      requested_start_time,
-      requested_end_time,
-      reason
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `;
-
-  db.query(
-    sql,
-    [
+  try {
+    const {
       professor_id,
       course_id,
       requested_day,
@@ -38,65 +19,119 @@ exports.createRequest = (
       requested_start_time,
       requested_end_time,
       reason,
-    ],
-    (err) => {
-      if (err) {
-        return res.status(500).json(err);
-      }
+    } = req.body;
 
-      res.json({
-        success: true,
-        message:
-          "Request submitted successfully",
-      });
-    }
-  );
+    const sql = `
+      INSERT INTO professor_requests
+      (
+        professor_id,
+        course_id,
+        requested_day,
+        requested_room,
+        requested_start_time,
+        requested_end_time,
+        reason
+      )
+      VALUES
+      (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7
+      )
+    `;
+
+    await db.query(sql, [
+      professor_id,
+      course_id,
+      requested_day,
+      requested_room,
+      requested_start_time,
+      requested_end_time,
+      reason,
+    ]);
+
+    res.json({
+      success: true,
+      message:
+        "Request submitted successfully",
+    });
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json(err);
+  }
 };
 
-exports.getRequests = (
-  req,
-  res
-) => {
-  const sql = `
-    SELECT * FROM professor_requests
-  `;
+/*
+========================================
+GET REQUESTS
+========================================
+*/
 
-  db.query(sql, (err, result) => {
-    if (err) {
-      return res.status(500).json(err);
+exports.getRequests =
+  async (req, res) => {
+    try {
+      const sql = `
+        SELECT *
+        FROM professor_requests
+        ORDER BY created_at DESC
+      `;
+
+      const result =
+        await db.query(sql);
+
+      res.json(
+        result.rows
+      );
+    } catch (err) {
+      console.error(err);
+
+      res
+        .status(500)
+        .json(err);
     }
+  };
 
-    res.json(result);
-  });
-};
+/*
+========================================
+UPDATE REQUEST STATUS
+========================================
+*/
 
-exports.updateRequestStatus = (
-  req,
-  res
-) => {
-  const { id } = req.params;
+exports.updateRequestStatus =
+  async (req, res) => {
+    try {
+      const { id } =
+        req.params;
 
-  const { status } = req.body;
+      const { status } =
+        req.body;
 
-  const sql = `
-    UPDATE professor_requests
-    SET status = ?
-    WHERE id = ?
-  `;
+      const sql = `
+        UPDATE professor_requests
+        SET status = $1
+        WHERE id = $2
+      `;
 
-  db.query(
-    sql,
-    [status, id],
-    (err) => {
-      if (err) {
-        return res.status(500).json(err);
-      }
+      await db.query(sql, [
+        status,
+        id,
+      ]);
 
       res.json({
         success: true,
         message:
           "Request updated successfully",
       });
+    } catch (err) {
+      console.error(err);
+
+      res
+        .status(500)
+        .json(err);
     }
-  );
-};
+  };

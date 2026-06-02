@@ -6,62 +6,69 @@ ENROLL COURSE
 ========================================
 */
 
-exports.enrollCourse = (
+exports.enrollCourse = async (
   req,
   res
 ) => {
-  const student_id =
-    req.user.id;
+  try {
+    const student_id =
+      req.user.id;
 
-  const { course_id } =
-    req.body;
+    const { course_id } =
+      req.body;
 
-  const checkSql = `
-    SELECT * FROM enrollments
-    WHERE student_id = ?
-    AND course_id = ?
-  `;
+    const checkSql = `
+      SELECT *
+      FROM enrollments
+      WHERE student_id = $1
+      AND course_id = $2
+    `;
 
-  db.query(
-    checkSql,
-    [student_id, course_id],
-    (err, result) => {
-      if (result.length > 0) {
-        return res.status(400).json({
+    const checkResult =
+      await db.query(
+        checkSql,
+        [
+          student_id,
+          course_id,
+        ]
+      );
+
+    if (
+      checkResult.rows.length >
+      0
+    ) {
+      return res
+        .status(400)
+        .json({
           error:
             "Already enrolled",
         });
-      }
-
-      const sql = `
-        INSERT INTO enrollments
-        (
-          student_id,
-          course_id
-        )
-        VALUES (?, ?)
-      `;
-
-      db.query(
-        sql,
-        [student_id, course_id],
-        (err) => {
-          if (err) {
-            return res
-              .status(500)
-              .json(err);
-          }
-
-          res.json({
-            success: true,
-
-            message:
-              "Course enrolled successfully",
-          });
-        }
-      );
     }
-  );
+
+    const sql = `
+      INSERT INTO enrollments
+      (
+        student_id,
+        course_id
+      )
+      VALUES ($1, $2)
+    `;
+
+    await db.query(sql, [
+      student_id,
+      course_id,
+    ]);
+
+    res.json({
+      success: true,
+      message:
+        "Course enrolled successfully",
+    });
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json(err);
+  }
 };
 
 /*
@@ -70,30 +77,34 @@ GET STUDENT ENROLLMENTS
 ========================================
 */
 
-exports.getMyEnrollments = (
-  req,
-  res
-) => {
-  const sql = `
-    SELECT
-      courses.*
-    FROM enrollments
+exports.getMyEnrollments =
+  async (req, res) => {
+    try {
+      const sql = `
+        SELECT
+          courses.*
+        FROM enrollments
 
-    JOIN courses
-    ON enrollments.course_id = courses.id
+        JOIN courses
+        ON enrollments.course_id = courses.id
 
-    WHERE enrollments.student_id = ?
-  `;
+        WHERE enrollments.student_id = $1
+      `;
 
-  db.query(
-    sql,
-    [req.user.id],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json(err);
-      }
+      const result =
+        await db.query(
+          sql,
+          [req.user.id]
+        );
 
-      res.json(result);
+      res.json(
+        result.rows
+      );
+    } catch (err) {
+      console.error(err);
+
+      res
+        .status(500)
+        .json(err);
     }
-  );
-};
+  };

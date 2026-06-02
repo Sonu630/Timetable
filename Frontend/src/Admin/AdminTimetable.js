@@ -1,28 +1,33 @@
-import React from "react";
+import React, {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  getTimetable,
+} from "../api/timetableApi";
 
 export default function AdminTimetable() {
-  const timetable = [
-    {
-      department: "CSE",
-      subject: "DSA",
-      faculty: "Prof. Kumar",
-      time: "9:00 AM",
-    },
+  const [timetable, setTimetable] =
+    useState([]);
 
-    {
-      department: "ECE",
-      subject: "Signals",
-      faculty: "Prof. Sharma",
-      time: "11:00 AM",
-    },
+  useEffect(() => {
+    loadTimetable();
+  }, []);
 
-    {
-      department: "MECH",
-      subject: "Thermodynamics",
-      faculty: "Prof. Rao",
-      time: "2:00 PM",
-    },
-  ];
+  const loadTimetable =
+    async () => {
+      try {
+        const response =
+          await getTimetable();
+
+        setTimetable(
+          response.data
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    };
 
   return (
     <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-4 sm:p-8">
@@ -32,50 +37,78 @@ export default function AdminTimetable() {
 
       <div className="overflow-x-auto w-full">
         <table className="min-w-[800px] w-full">
+
           <thead>
             <tr className="border-b border-slate-200">
               <th className="text-left py-4">
-                Department
+                Course
               </th>
 
               <th className="text-left py-4">
-                Subject
+                Code
               </th>
 
               <th className="text-left py-4">
-                Faculty
+                Day
               </th>
 
               <th className="text-left py-4">
-                Time
+                Room
+              </th>
+
+              <th className="text-left py-4">
+                Start
+              </th>
+
+              <th className="text-left py-4">
+                End
               </th>
             </tr>
           </thead>
 
           <tbody>
-            {timetable.map((item, index) => (
-              <tr
-                key={index}
-                className="border-b border-slate-100 hover:bg-slate-50 transition-all duration-300"
-              >
-                <td className="py-4">
-                  {item.department}
-                </td>
+            {timetable.map(
+              (item) => (
+                <tr
+                  key={item.id}
+                  className="border-b border-slate-100 hover:bg-slate-50"
+                >
+                  <td className="py-4">
+                    {
+                      item.course_name
+                    }
+                  </td>
 
-                <td className="py-4">
-                  {item.subject}
-                </td>
+                  <td className="py-4">
+                    {
+                      item.course_code
+                    }
+                  </td>
 
-                <td className="py-4">
-                  {item.faculty}
-                </td>
+                  <td className="py-4">
+                    {item.day}
+                  </td>
 
-                <td className="py-4">
-                  {item.time}
-                </td>
-              </tr>
-            ))}
+                  <td className="py-4">
+                    {item.room}
+                  </td>
+
+                  <td className="py-4">
+                    {
+                      item.start_time
+                    }
+                  </td>
+
+                  <td className="py-4">
+                    {
+                      item.end_time
+                    }
+                  </td>
+                </tr>
+              )
+            )}
           </tbody>
+
         </table>
       </div>
     </div>

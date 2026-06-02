@@ -1,81 +1,48 @@
 const db = require("./db");
 
-const createUsersTable = () => {
+const createUsersTable = async () => {
   const sql = `
     CREATE TABLE IF NOT EXISTS users (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-
+      id SERIAL PRIMARY KEY,
       username VARCHAR(100) NOT NULL,
-
       email VARCHAR(100) UNIQUE NOT NULL,
-
       password VARCHAR(255) NOT NULL,
-
-      role ENUM(
-        'student',
-        'professor',
-        'admin'
-      ) NOT NULL,
-
+      role VARCHAR(20) NOT NULL
+      CHECK (role IN ('student','professor','admin')),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
+    );
   `;
 
-  db.query(sql, (err) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(
-        "Users Table Ready"
-      );
-    }
-  });
+  await db.query(sql);
+  console.log("Users Table Ready");
 };
 
-const createCoursesTable = () => {
+const createCoursesTable = async () => {
   const sql = `
     CREATE TABLE IF NOT EXISTS courses (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-
+      id SERIAL PRIMARY KEY,
       course_name VARCHAR(255) NOT NULL,
-
       course_code VARCHAR(100) UNIQUE NOT NULL,
-
       credits INT NOT NULL,
-
       professor_id INT,
-
       department VARCHAR(100),
-
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
       FOREIGN KEY (professor_id)
       REFERENCES users(id)
       ON DELETE SET NULL
-    )
+    );
   `;
 
-  db.query(sql, (err) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(
-        "Courses Table Ready"
-      );
-    }
-  });
+  await db.query(sql);
+  console.log("Courses Table Ready");
 };
 
-
-const createEnrollmentsTable = () => {
+const createEnrollmentsTable = async () => {
   const sql = `
     CREATE TABLE IF NOT EXISTS enrollments (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-
+      id SERIAL PRIMARY KEY,
       student_id INT NOT NULL,
-
       course_id INT NOT NULL,
-
       enrolled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
       FOREIGN KEY (student_id)
@@ -85,33 +52,30 @@ const createEnrollmentsTable = () => {
       FOREIGN KEY (course_id)
       REFERENCES courses(id)
       ON DELETE CASCADE
-    )
+    );
   `;
 
-  db.query(sql, (err) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(
-        "Enrollments Table Ready"
-      );
-    }
-  });
+  await db.query(sql);
+  console.log("Enrollments Table Ready");
 };
-const createTimetableTable = () => {
+
+const createTimetableTable = async () => {
   const sql = `
     CREATE TABLE IF NOT EXISTS timetable (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
 
       course_id INT NOT NULL,
 
-      day ENUM(
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday'
+      day VARCHAR(20)
+      CHECK (
+        day IN (
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday'
+        )
       ),
 
       room VARCHAR(100),
@@ -125,23 +89,17 @@ const createTimetableTable = () => {
       FOREIGN KEY (course_id)
       REFERENCES courses(id)
       ON DELETE CASCADE
-    )
+    );
   `;
 
-  db.query(sql, (err) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(
-        "Timetable Table Ready"
-      );
-    }
-  });
+  await db.query(sql);
+  console.log("Timetable Table Ready");
 };
-const createProfessorRequestsTable = () => {
+
+const createProfessorRequestsTable = async () => {
   const sql = `
     CREATE TABLE IF NOT EXISTS professor_requests (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
 
       professor_id INT NOT NULL,
 
@@ -157,11 +115,15 @@ const createProfessorRequestsTable = () => {
 
       reason TEXT,
 
-      status ENUM(
-        'pending',
-        'approved',
-        'rejected'
-      ) DEFAULT 'pending',
+      status VARCHAR(20)
+      DEFAULT 'pending'
+      CHECK (
+        status IN (
+          'pending',
+          'approved',
+          'rejected'
+        )
+      ),
 
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
@@ -172,23 +134,19 @@ const createProfessorRequestsTable = () => {
       FOREIGN KEY (course_id)
       REFERENCES courses(id)
       ON DELETE CASCADE
-    )
+    );
   `;
 
-  db.query(sql, (err) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(
-        "Professor Requests Table Ready"
-      );
-    }
-  });
+  await db.query(sql);
+  console.log(
+    "Professor Requests Table Ready"
+  );
 };
-const createPollsTable = () => {
+
+const createPollsTable = async () => {
   const sql = `
     CREATE TABLE IF NOT EXISTS polls (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
 
       professor_id INT NOT NULL,
 
@@ -211,23 +169,17 @@ const createPollsTable = () => {
       FOREIGN KEY (course_id)
       REFERENCES courses(id)
       ON DELETE CASCADE
-    )
+    );
   `;
 
-  db.query(sql, (err) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(
-        "Polls Table Ready"
-      );
-    }
-  });
+  await db.query(sql);
+  console.log("Polls Table Ready");
 };
-const createPollVotesTable = () => {
+
+const createPollVotesTable = async () => {
   const sql = `
     CREATE TABLE IF NOT EXISTS poll_votes (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
 
       poll_id INT NOT NULL,
 
@@ -244,48 +196,58 @@ const createPollVotesTable = () => {
       FOREIGN KEY (student_id)
       REFERENCES users(id)
       ON DELETE CASCADE
-    )
+    );
   `;
 
-  db.query(sql, (err) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(
-        "Poll Votes Table Ready"
-      );
-    }
-  });
+  await db.query(sql);
+  console.log("Poll Votes Table Ready");
 };
-const createNotificationsTable = () => {
+
+const createNotificationsTable = async () => {
   const sql = `
     CREATE TABLE IF NOT EXISTS notifications (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
 
       user_id INT NOT NULL,
 
       message TEXT NOT NULL,
 
-      is_read BOOLEAN DEFAULT false,
+      is_read BOOLEAN DEFAULT FALSE,
 
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
       FOREIGN KEY (user_id)
       REFERENCES users(id)
       ON DELETE CASCADE
-    )
+    );
   `;
 
-  db.query(sql, (err) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(
-        "Notifications Table Ready"
-      );
-    }
-  });
+  await db.query(sql);
+  console.log(
+    "Notifications Table Ready"
+  );
 };
+
+const createAnnouncementsTable = async () => {
+  const sql = `
+    CREATE TABLE IF NOT EXISTS announcements (
+      id SERIAL PRIMARY KEY,
+
+      title VARCHAR(255),
+
+      description TEXT,
+
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+
+  await db.query(sql);
+  console.log(
+    "Announcements Table Ready"
+  );
+};
+
+
 module.exports = {
   createUsersTable,
   createCoursesTable,
@@ -295,4 +257,5 @@ module.exports = {
   createPollsTable,
   createPollVotesTable,
   createNotificationsTable,
+  createAnnouncementsTable,
 };

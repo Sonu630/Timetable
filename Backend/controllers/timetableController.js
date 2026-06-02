@@ -6,51 +6,49 @@ CREATE TIMETABLE
 ========================================
 */
 
-exports.createTimetable = (
+exports.createTimetable = async (
   req,
   res
 ) => {
-  const {
-    course_id,
-    day,
-    room,
-    start_time,
-    end_time,
-  } = req.body;
-
-  const sql = `
-    INSERT INTO timetable
-    (
-      course_id,
-      day,
-      room,
-      start_time,
-      end_time
-    )
-    VALUES (?, ?, ?, ?, ?)
-  `;
-
-  db.query(
-    sql,
-    [
+  try {
+    const {
       course_id,
       day,
       room,
       start_time,
       end_time,
-    ],
-    (err) => {
-      if (err) {
-        return res.status(500).json(err);
-      }
+    } = req.body;
 
-      res.json({
-        success: true,
-        message:
-          "Timetable created successfully",
-      });
-    }
-  );
+    const sql = `
+      INSERT INTO timetable
+      (
+        course_id,
+        day,
+        room,
+        start_time,
+        end_time
+      )
+      VALUES ($1, $2, $3, $4, $5)
+    `;
+
+    await db.query(sql, [
+      course_id,
+      day,
+      room,
+      start_time,
+      end_time,
+    ]);
+
+    res.json({
+      success: true,
+      message:
+        "Timetable created successfully",
+    });
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json(err);
+  }
 };
 
 /*
@@ -59,28 +57,33 @@ GET ALL TIMETABLES
 ========================================
 */
 
-exports.getTimetable = (
+exports.getTimetable = async (
   req,
   res
 ) => {
-  const sql = `
-    SELECT
-      timetable.*,
-      courses.course_name,
-      courses.course_code
-    FROM timetable
+  try {
+    const sql = `
+      SELECT
+        timetable.*,
+        courses.course_name,
+        courses.course_code
+      FROM timetable
 
-    JOIN courses
-    ON timetable.course_id = courses.id
-  `;
+      JOIN courses
+      ON timetable.course_id = courses.id
+    `;
 
-  db.query(sql, (err, result) => {
-    if (err) {
-      return res.status(500).json(err);
-    }
+    const result =
+      await db.query(sql);
 
-    res.json(result);
-  });
+    res.json(
+      result.rows
+    );
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json(err);
+  }
 };
 
 /*
@@ -89,39 +92,43 @@ GET STUDENT TIMETABLE
 ========================================
 */
 
-exports.getStudentTimetable = (
-  req,
-  res
-) => {
-  const sql = `
-    SELECT
-      timetable.*,
-      courses.course_name,
-      courses.course_code,
-      courses.department
-    FROM timetable
+exports.getStudentTimetable =
+  async (req, res) => {
+    try {
+      const sql = `
+        SELECT
+          timetable.*,
+          courses.course_name,
+          courses.course_code,
+          courses.department
+        FROM timetable
 
-    JOIN courses
-    ON timetable.course_id = courses.id
+        JOIN courses
+        ON timetable.course_id = courses.id
 
-    JOIN enrollments
-    ON enrollments.course_id = courses.id
+        JOIN enrollments
+        ON enrollments.course_id = courses.id
 
-    WHERE enrollments.student_id = ?
-  `;
+        WHERE enrollments.student_id = $1
+      `;
 
-  db.query(
-    sql,
-    [req.user.id],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json(err);
-      }
+      const result =
+        await db.query(
+          sql,
+          [req.user.id]
+        );
 
-      res.json(result);
+      res.json(
+        result.rows
+      );
+    } catch (err) {
+      console.error(err);
+
+      res
+        .status(500)
+        .json(err);
     }
-  );
-};
+  };
 
 /*
 ========================================
@@ -129,51 +136,50 @@ UPDATE TIMETABLE
 ========================================
 */
 
-exports.updateTimetable = (
-  req,
-  res
-) => {
-  const { id } = req.params;
+exports.updateTimetable =
+  async (req, res) => {
+    try {
+      const { id } =
+        req.params;
 
-  const {
-    day,
-    room,
-    start_time,
-    end_time,
-  } = req.body;
+      const {
+        day,
+        room,
+        start_time,
+        end_time,
+      } = req.body;
 
-  const sql = `
-    UPDATE timetable
-    SET
-      day = ?,
-      room = ?,
-      start_time = ?,
-      end_time = ?
-    WHERE id = ?
-  `;
+      const sql = `
+        UPDATE timetable
+        SET
+          day = $1,
+          room = $2,
+          start_time = $3,
+          end_time = $4
+        WHERE id = $5
+      `;
 
-  db.query(
-    sql,
-    [
-      day,
-      room,
-      start_time,
-      end_time,
-      id,
-    ],
-    (err) => {
-      if (err) {
-        return res.status(500).json(err);
-      }
+      await db.query(sql, [
+        day,
+        room,
+        start_time,
+        end_time,
+        id,
+      ]);
 
       res.json({
         success: true,
         message:
           "Timetable updated successfully",
       });
+    } catch (err) {
+      console.error(err);
+
+      res
+        .status(500)
+        .json(err);
     }
-  );
-};
+  };
 
 /*
 ========================================
@@ -181,24 +187,31 @@ DELETE TIMETABLE
 ========================================
 */
 
-exports.deleteTimetable = (
-  req,
-  res
-) => {
-  const { id } = req.params;
+exports.deleteTimetable =
+  async (req, res) => {
+    try {
+      const { id } =
+        req.params;
 
-  const sql =
-    "DELETE FROM timetable WHERE id = ?";
+      const sql = `
+        DELETE FROM timetable
+        WHERE id = $1
+      `;
 
-  db.query(sql, [id], (err) => {
-    if (err) {
-      return res.status(500).json(err);
+      await db.query(sql, [
+        id,
+      ]);
+
+      res.json({
+        success: true,
+        message:
+          "Timetable deleted successfully",
+      });
+    } catch (err) {
+      console.error(err);
+
+      res
+        .status(500)
+        .json(err);
     }
-
-    res.json({
-      success: true,
-      message:
-        "Timetable deleted successfully",
-    });
-  });
-};
+  };

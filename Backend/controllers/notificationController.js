@@ -6,24 +6,32 @@ CREATE NOTIFICATION
 ========================================
 */
 
-exports.createNotification = (
-  user_id,
-  message
-) => {
-  const sql = `
-    INSERT INTO notifications
-    (
-      user_id,
-      message
-    )
-    VALUES (?, ?)
-  `;
+exports.createNotification =
+  async (
+    user_id,
+    message
+  ) => {
+    try {
+      const sql = `
+        INSERT INTO notifications
+        (
+          user_id,
+          message
+        )
+        VALUES ($1, $2)
+      `;
 
-  db.query(
-    sql,
-    [user_id, message]
-  );
-};
+      await db.query(sql, [
+        user_id,
+        message,
+      ]);
+    } catch (err) {
+      console.error(
+        "Notification Error:",
+        err
+      );
+    }
+  };
 
 /*
 ========================================
@@ -31,28 +39,35 @@ GET NOTIFICATIONS
 ========================================
 */
 
-exports.getNotifications = (
-  req,
-  res
-) => {
-  const sql = `
-    SELECT *
-    FROM notifications
+exports.getNotifications =
+  async (
+    req,
+    res
+  ) => {
+    try {
+      const sql = `
+        SELECT *
+        FROM notifications
 
-    WHERE user_id = ?
+        WHERE user_id = $1
 
-    ORDER BY created_at DESC
-  `;
+        ORDER BY created_at DESC
+      `;
 
-  db.query(
-    sql,
-    [req.user.id],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json(err);
-      }
+      const result =
+        await db.query(
+          sql,
+          [req.user.id]
+        );
 
-      res.json(result);
+      res.json(
+        result.rows
+      );
+    } catch (err) {
+      console.error(err);
+
+      res
+        .status(500)
+        .json(err);
     }
-  );
-};
+  };

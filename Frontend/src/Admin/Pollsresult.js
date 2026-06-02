@@ -1,88 +1,106 @@
-import React from "react";
+import React, {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  getPolls,
+  getPollResults,
+} from "../api/pollApi";
 
 export default function Pollsresult() {
-  const results = [
-    {
-      poll: "Should we add dark mode?",
-      yes: 85,
-      no: 15,
-    },
+  const [polls, setPolls] =
+    useState([]);
 
-    {
-      poll: "Do you like the new UI?",
-      yes: 92,
-      no: 8,
-    },
+  const [results, setResults] =
+    useState({});
 
-    {
-      poll: "Need more dashboard features?",
-      yes: 78,
-      no: 22,
-    },
-  ];
+  useEffect(() => {
+    loadPolls();
+  }, []);
+
+  const loadPolls =
+    async () => {
+      const pollsRes =
+        await getPolls();
+
+      setPolls(
+        pollsRes.data
+      );
+
+      for (const poll of pollsRes.data) {
+        const resultRes =
+          await getPollResults(
+            poll.id
+          );
+
+        setResults(
+          (prev) => ({
+            ...prev,
+            [poll.id]:
+              resultRes.data,
+          })
+        );
+      }
+    };
 
   return (
     <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-4 sm:p-8">
+
       <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-8">
         Poll Results
       </h1>
 
       <div className="space-y-6">
-        {results.map((item, index) => (
-          <div
-            key={index}
-            className="bg-slate-100 rounded-2xl p-4 sm:p-6"
-          >
-            <h2 className="text-lg sm:text-xl font-semibold text-slate-800 mb-5">
-              {item.poll}
-            </h2>
 
-            <div className="space-y-5">
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="font-medium">
-                    Yes
-                  </span>
+        {polls.map(
+          (poll) => (
+            <div
+              key={poll.id}
+              className="bg-slate-100 rounded-2xl p-6"
+            >
+              <h2 className="text-xl font-semibold">
+                {
+                  poll.question
+                }
+              </h2>
 
-                  <span className="font-semibold">
-                    {item.yes}%
-                  </span>
-                </div>
+              <div className="mt-4 space-y-3">
 
-                <div className="w-full bg-slate-300 rounded-full h-4">
-                  <div
-                    className="bg-green-500 h-4 rounded-full transition-all duration-500"
-                    style={{
-                      width: `${item.yes}%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
+                {results[
+                  poll.id
+                ]?.map(
+                  (
+                    item,
+                    index
+                  ) => (
+                    <div
+                      key={index}
+                      className="flex justify-between"
+                    >
+                      <span>
+                        {
+                          item.selected_option
+                        }
+                      </span>
 
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="font-medium">
-                    No
-                  </span>
+                      <span>
+                        {
+                          item.total_votes
+                        }{" "}
+                        votes
+                      </span>
+                    </div>
+                  )
+                )}
 
-                  <span className="font-semibold">
-                    {item.no}%
-                  </span>
-                </div>
-
-                <div className="w-full bg-slate-300 rounded-full h-4">
-                  <div
-                    className="bg-red-500 h-4 rounded-full transition-all duration-500"
-                    style={{
-                      width: `${item.no}%`,
-                    }}
-                  ></div>
-                </div>
               </div>
             </div>
-          </div>
-        ))}
+          )
+        )}
+
       </div>
+
     </div>
   );
 }

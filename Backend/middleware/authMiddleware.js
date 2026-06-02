@@ -6,28 +6,40 @@ const authMiddleware = (
   next
 ) => {
   try {
-    const token =
+    const authHeader =
       req.headers.authorization;
 
-    if (!token) {
+    if (!authHeader) {
       return res.status(401).json({
         error: "Access denied",
       });
     }
 
-    const verified = jwt.verify(
-      token,
-      process.env.JWT_SECRET
-    );
+    const token =
+      authHeader.startsWith(
+        "Bearer "
+      )
+        ? authHeader.split(
+            " "
+          )[1]
+        : authHeader;
+
+    const verified =
+      jwt.verify(
+        token,
+        process.env.JWT_SECRET
+      );
 
     req.user = verified;
 
     next();
   } catch (error) {
     res.status(401).json({
-      error: "Invalid token",
+      error:
+        "Invalid token",
     });
   }
 };
 
-module.exports = authMiddleware;
+module.exports =
+  authMiddleware;
