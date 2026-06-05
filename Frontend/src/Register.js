@@ -38,7 +38,7 @@ export default function Register({ Setalert }) {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:4000/register", {
+      const response = await fetch`${process.env.REACT_APP_API_URL}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -146,7 +146,7 @@ export default function Register({ Setalert }) {
               onSuccess={async (credentialResponse) => {
                 try {
                   const response = await fetch(
-                    "http://localhost:4000/google-login",
+                    `${process.env.REACT_APP_API_URL}/google-login`,
                     {
                       method: "POST",
                       headers: {

@@ -27,7 +27,7 @@ export default function Userlogin({ Setalert }) {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:4000/login", {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -151,7 +151,7 @@ export default function Userlogin({ Setalert }) {
               onSuccess={async (credentialResponse) => {
                 try {
                   const response = await fetch(
-                    "http://localhost:4000/google-login",
+                    `${process.env.REACT_APP_API_URL}/google-login`,
                     {
                       method: "POST",
                       headers: {
