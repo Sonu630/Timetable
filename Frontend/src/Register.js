@@ -30,21 +30,24 @@ export default function Register({ Setalert }) {
     if (formData.password !== formData.confirmPassword) {
       Setalert("Passwords do not match");
       setTimeout(() => {
-  Setalert(null);
-}, 1500);
+        Setalert(null);
+      }, 1500);
       return;
     }
 
     setLoading(true);
 
     try {
-      const response = await fetch`${process.env.REACT_APP_API_URL}/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
         },
-        body: JSON.stringify(formData),
-      });
+      );
 
       const data = await response.json();
 
@@ -54,15 +57,15 @@ export default function Register({ Setalert }) {
 
       Setalert("Registration successful");
       setTimeout(() => {
-  Setalert(null);
-}, 1500);
+        Setalert(null);
+      }, 1500);
 
       navigate("/Userportal/Login");
     } catch (err) {
       Setalert(err.message);
       setTimeout(() => {
-  Setalert(null);
-}, 1500);
+        Setalert(null);
+      }, 1500);
     } finally {
       setLoading(false);
     }
@@ -118,7 +121,6 @@ export default function Register({ Setalert }) {
             className="w-full px-4 py-4 rounded-2xl bg-white/10 border border-white/20 text-white placeholder-gray-300"
           />
 
-
           <button
             type="submit"
             disabled={loading}
@@ -168,8 +170,8 @@ export default function Register({ Setalert }) {
 
                   Setalert("Google Sign Up Successful");
                   setTimeout(() => {
-  Setalert(null);
-}, 1500);
+                    Setalert(null);
+                  }, 1500);
 
                   const roleRoutes = {
                     student: "/Student",
@@ -181,15 +183,15 @@ export default function Register({ Setalert }) {
                 } catch (err) {
                   Setalert("Google Registration Failed");
                   setTimeout(() => {
-  Setalert(null);
-}, 1500);
+                    Setalert(null);
+                  }, 1500);
                 }
               }}
               onError={() => {
                 Setalert("Google Registration Failed");
                 setTimeout(() => {
-  Setalert(null);
-}, 1500);
+                  Setalert(null);
+                }, 1500);
               }}
             />
           </div>
