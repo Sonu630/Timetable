@@ -9,11 +9,7 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-/*
-========================================
-SOCKET IO
-========================================
-*/
+
 
 const io = new Server(server, {
   cors: {
@@ -36,30 +32,17 @@ io.on("connection", (socket) => {
   });
 });
 
-/*
-========================================
-EXPORT IO
-========================================
-*/
+
 
 module.exports.io = io;
 
-/*
-========================================
-DATABASE
-========================================
-*/
 
 require("./config/db");
 
-/*
-========================================
-TABLES
-========================================
-*/
 
 const {
   createUsersTable,
+  updateUsersTable,
   createCoursesTable,
   createEnrollmentsTable,
   createTimetableTable,
@@ -70,11 +53,7 @@ const {
   createAnnouncementsTable,
 } = require("./config/createTables");
 
-/*
-========================================
-MIDDLEWARE
-========================================
-*/
+
 
 const authMiddleware = require(
   "./middleware/authMiddleware"
@@ -84,15 +63,15 @@ const roleMiddleware = require(
   "./middleware/roleMiddleware"
 );
 
-/*
-========================================
-ROUTES
-========================================
-*/
 
 const authRoutes = require(
   "./routes/authRoutes"
 );
+
+const forgotPasswordRoutes =
+  require(
+    "./routes/forgotPasswordRoutes"
+  );
 
 const courseRoutes = require(
   "./routes/courseRoutes"
@@ -130,27 +109,19 @@ const announcementRoute = require(
   "./routes/announcementRoute"
 );
 
-/*
-========================================
-APP MIDDLEWARE
-========================================
-*/
+
 
 app.use(cors());
 
 app.use(express.json());
 
-/*
-/*
-========================================
-CREATE TABLES
-========================================
-*/
+
 
 const initTables = async () => {
   try {
     await createUsersTable();
 
+    await updateUsersTable();
     await createCoursesTable();
 
     await createEnrollmentsTable();
@@ -183,13 +154,11 @@ All Tables Created Successfully
 };
 
 initTables();
-/*
-========================================
-API ROUTES
-========================================
-*/
+
 
 app.use("/", authRoutes);
+
+app.use("/", forgotPasswordRoutes);
 
 app.use("/", courseRoutes);
 
@@ -209,11 +178,7 @@ app.use("/", profileRoutes);
 
 app.use("/", announcementRoute);
 
-/*
-========================================
-HOME ROUTE
-========================================
-*/
+
 
 app.get("/", (req, res) => {
   res.send(
@@ -221,11 +186,7 @@ app.get("/", (req, res) => {
   );
 });
 
-/*
-========================================
-TEST PROTECTED ROUTES
-========================================
-*/
+
 
 app.get(
   "/student",
@@ -269,11 +230,7 @@ app.get(
   }
 );
 
-/*
-========================================
-404 HANDLER
-========================================
-*/
+
 
 app.use((req, res) => {
   res.status(404).json({
@@ -281,11 +238,7 @@ app.use((req, res) => {
   });
 });
 
-/*
-========================================
-GLOBAL ERROR HANDLER
-========================================
-*/
+
 
 app.use(
   (
@@ -304,11 +257,7 @@ app.use(
   }
 );
 
-/*
-========================================
-START SERVER
-========================================
-*/
+
 
 const PORT =
   process.env.PORT || 4000;

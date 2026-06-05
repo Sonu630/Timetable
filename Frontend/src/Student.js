@@ -12,8 +12,8 @@ import Timetable from "./components/Timetable";
 import Polls from "./components/Polls";
 import StuAlert from "./components/StuAlert";
 
-export default function Student() {
-  const [alert, Setalert] = useState(null);
+export default function Student({alert,Setalert}) {
+ 
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleSidebar = () => {

@@ -1,8 +1,23 @@
-import React from "react";
+import React,{ useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function Header({
-  toggleSidebar,
-}) {
+export default function Header({ toggleSidebar }) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("username");
+
+    navigate("/Userportal/Login");
+  };
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/Userportal/Login");
+    }
+  }, [navigate]);
   return (
     <header className="sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-4 px-4 sm:px-6 py-4">
@@ -19,9 +34,7 @@ export default function Header({
               Admin Panel
             </h1>
 
-            <p className="text-slate-500 text-sm">
-              Manage portal operations
-            </p>
+            <p className="text-slate-500 text-sm">Manage portal operations</p>
           </div>
         </div>
 
@@ -31,11 +44,7 @@ export default function Header({
           </button>
 
           <button
-            onClick={() => {
-              localStorage.clear();
-              window.location.href =
-                "/Userportal/Login";
-            }}
+            onClick={handleLogout}
             className="bg-cyan-500 hover:bg-cyan-600 hover:scale-105 active:scale-95 transition-all duration-300 text-white px-5 py-3 rounded-2xl"
           >
             Logout

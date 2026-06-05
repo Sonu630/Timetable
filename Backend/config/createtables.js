@@ -3,14 +3,35 @@ const db = require("./db");
 const createUsersTable = async () => {
   const sql = `
     CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      username VARCHAR(100) NOT NULL,
-      email VARCHAR(100) UNIQUE NOT NULL,
-      password VARCHAR(255) NOT NULL,
-      role VARCHAR(20) NOT NULL
-      CHECK (role IN ('student','professor','admin')),
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
+  id SERIAL PRIMARY KEY,
+
+  username VARCHAR(100) NOT NULL,
+
+  email VARCHAR(100) UNIQUE NOT NULL,
+
+  password VARCHAR(255) NOT NULL,
+
+  role VARCHAR(20) NOT NULL
+  CHECK (
+    role IN (
+      'student',
+      'professor',
+      'admin'
+    )
+  ),
+
+  otp VARCHAR(6),
+
+  otp_expiry TIMESTAMP,
+
+  is_verified BOOLEAN DEFAULT FALSE,
+
+  verification_token TEXT,
+
+  profile_picture TEXT,
+
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
   `;
 
   await db.query(sql);
@@ -138,9 +159,7 @@ const createProfessorRequestsTable = async () => {
   `;
 
   await db.query(sql);
-  console.log(
-    "Professor Requests Table Ready"
-  );
+  console.log("Professor Requests Table Ready");
 };
 
 const createPollsTable = async () => {
@@ -223,9 +242,7 @@ const createNotificationsTable = async () => {
   `;
 
   await db.query(sql);
-  console.log(
-    "Notifications Table Ready"
-  );
+  console.log("Notifications Table Ready");
 };
 
 const createAnnouncementsTable = async () => {
@@ -242,14 +259,40 @@ const createAnnouncementsTable = async () => {
   `;
 
   await db.query(sql);
-  console.log(
-    "Announcements Table Ready"
-  );
+  console.log("Announcements Table Ready");
 };
+const updateUsersTable = async () => {
+  await db.query(`
+    ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS otp VARCHAR(6);
+  `);
 
+  await db.query(`
+    ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS otp_expiry TIMESTAMP;
+  `);
+
+  await db.query(`
+    ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT FALSE;
+  `);
+
+  await db.query(`
+    ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS verification_token TEXT;
+  `);
+
+  await db.query(`
+    ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS profile_picture TEXT;
+  `);
+
+  console.log("Users Table Updated");
+};
 
 module.exports = {
   createUsersTable,
+  updateUsersTable,
   createCoursesTable,
   createEnrollmentsTable,
   createTimetableTable,

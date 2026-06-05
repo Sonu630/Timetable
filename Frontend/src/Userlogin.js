@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function Userlogin({ Setalert }) {
   const navigate = useNavigate();
@@ -45,6 +46,9 @@ export default function Userlogin({ Setalert }) {
       localStorage.setItem("username", data.username || "");
 
       Setalert("Login successful!");
+      setTimeout(() => {
+        Setalert(null);
+      }, 1500);
 
       const roleRoutes = {
         student: "/Student",
@@ -55,6 +59,9 @@ export default function Userlogin({ Setalert }) {
       navigate(roleRoutes[data.role]);
     } catch (err) {
       Setalert(err.message);
+      setTimeout(() => {
+        Setalert(null);
+      }, 1500);
     } finally {
       setLoading(false);
     }
@@ -64,20 +71,14 @@ export default function Userlogin({ Setalert }) {
     <div className="flex items-center justify-center min-h-screen">
       <div className="w-full max-w-md backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl p-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white">
-            Welcome Back
-          </h1>
+          <h1 className="text-4xl font-bold text-white">Welcome Back</h1>
 
-          <p className="text-gray-300 mt-3">
-            Sign in to continue
-          </p>
+          <p className="text-gray-300 mt-3">Sign in to continue</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="text-sm text-gray-200 block mb-2">
-              Email
-            </label>
+            <label className="text-sm text-gray-200 block mb-2">Email</label>
 
             <input
               type="email"
@@ -91,9 +92,7 @@ export default function Userlogin({ Setalert }) {
           </div>
 
           <div>
-            <label className="text-sm text-gray-200 block mb-2">
-              Password
-            </label>
+            <label className="text-sm text-gray-200 block mb-2">Password</label>
 
             <div className="relative">
               <input
@@ -142,6 +141,49 @@ export default function Userlogin({ Setalert }) {
               Register
             </Link>
           </p>
+          <div className="flex items-center my-4">
+            <hr className="flex-grow border-gray-500" />
+            <span className="px-3 text-gray-300">OR</span>
+            <hr className="flex-grow border-gray-500" />
+          </div>
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={async (credentialResponse) => {
+                try {
+                  const response = await fetch(
+                    "http://localhost:4000/google-login",
+                    {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        credential: credentialResponse.credential,
+                      }),
+                    },
+                  );
+
+                  const data = await response.json();
+
+                  localStorage.setItem("token", data.token);
+                  localStorage.setItem("role", data.role);
+
+                  navigate("/Student");
+                } catch (err) {
+                  Setalert("Google Login Failed");
+                  setTimeout(() => {
+                    Setalert(null);
+                  }, 1500);
+                }
+              }}
+              onError={() => {
+                Setalert("Google Login Failed");
+                setTimeout(() => {
+                  Setalert(null);
+                }, 1500);
+              }}
+            />
+          </div>
         </form>
       </div>
     </div>
