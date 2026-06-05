@@ -68,7 +68,10 @@ const announcementRoute = require("./routes/announcementRoute");
 // CORS
 app.use(
   cors({
-    origin: true,
+    origin:  [
+  "http://localhost:3000",
+  "https://timetablemanagementsystem-three.vercel.app",
+],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   })
